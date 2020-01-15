@@ -16,7 +16,7 @@ from attendance.serializer import OfficerSerializer
 
 
 class OfficerViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated, IsOwner)
+    #permission_classes = (IsAuthenticated, IsOwner)
     queryset = Officer.objects.all()
     serializer_class = OfficerSerializer
 
