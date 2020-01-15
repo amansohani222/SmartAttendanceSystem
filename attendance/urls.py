@@ -10,7 +10,6 @@ router = DefaultRouter()
 router.register(r'officers', views.OfficerViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('api/v1/login/', obtain_auth_token),
     path('api/v1/logout/', LogoutView.as_view()),
     path('api/v1/', include(router.urls)),

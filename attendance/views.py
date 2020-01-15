@@ -16,27 +16,40 @@ from attendance.serializer import OfficerSerializer
 
 
 class OfficerViewSet(viewsets.ModelViewSet):
+    authentication_classes = (TokenAuthentication,)
+    #permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {
-        'retrieve': IsOwner,
-        'update': IsOwner,
-        'destroy': IsOwner,
+        'retrieve': (IsOwner,),
+        'update': (IsOwner,),
+        'destroy': (IsOwner,),
     }
+
     queryset = Officer.objects.all()
     serializer_class = OfficerSerializer
 
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]
+
     def create(self, request, *args, **kwargs):
         data = request.data
-        user = Officer(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
+        user = Officer(username=data['username'],
+                       first_name=data['first_name'], last_name=data['last_name'],
                        phone=data['phone'],
                        email=data['email'], office_latitude=data['office_latitude'],
                        office_longitude=data['office_longitude'], office_time_entry=data['office_time_entry'])
         user.set_password(request.data['password'])
         user.save()
-        serializer = self.get_serializer(user)
+        serializer = self.serializer_class(user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
+        print("AMAN")
         instance = self.get_object()
         id = instance.id
         try:
@@ -59,13 +72,14 @@ class OfficerViewSet(viewsets.ModelViewSet):
             o_lon = float(officer.office_longitude)
             lat = float(request.GET['lat'])
             lon = float(request.GET['lon'])
-            d=calc_distance([o_lat, o_lon], [lat, lon])
-            if d<0.01:
+            d = calc_distance([o_lat, o_lon], [lat, lon])
+            if d < 0.01:
                 officer.total_attendance += 1
                 officer.save()
                 return Response({"status": "Present Updated"})
             else:
                 return Response({"status": "Try again"})
+
 
 class LogoutView(APIView):
     authentication_class = [TokenAuthentication]
@@ -80,13 +94,13 @@ class LogoutView(APIView):
 def calc_distance(origin, destination):
     lat1, lon1 = origin
     lat2, lon2 = destination
-    radius = 6371 # km
+    radius = 6371  # km
 
-    dlat = math.radians(lat2-lat1)
-    dlon = math.radians(lon2-lon1)
-    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     d = radius * c
 
     return d
