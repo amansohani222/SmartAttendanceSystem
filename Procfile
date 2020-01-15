@@ -1,0 +1,1 @@
+web: gunicorn DK1.wsgi --log-file -
