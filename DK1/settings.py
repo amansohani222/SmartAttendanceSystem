@@ -24,7 +24,7 @@ SECRET_KEY = 'kh4ux8inr79i+sc#xtvhrr035$2#7o!k7*i1iv(-tfbvs)-6_$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['smart-india-hackathon.herokuapp.com']
+ALLOWED_HOSTS = ['smart-india-hackathon.herokuapp.com', '127.0.0.1']
 
 # Application definition
 
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware'
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
