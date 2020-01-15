@@ -16,12 +16,12 @@ from attendance.serializer import OfficerSerializer
 
 
 class OfficerViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated, IsOwner)
+    permission_classes = (IsAuthenticated, IsOwner)
     queryset = Officer.objects.all()
     serializer_class = OfficerSerializer
 
     def create(self, request, *args, **kwargs):
-        data = request.data.dict()
+        data = request.data
         user = Officer(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
                        phone=data['phone'],
                        email=data['email'], office_latitude=data['office_latitude'],
@@ -63,9 +63,6 @@ class OfficerViewSet(viewsets.ModelViewSet):
             else:
                 return Response({"status": "Try again"})
 
-    @action(detail=True, methods=['get'])
-    def aman(self, request, pk=None):
-        return Response({"status": "AMAN HERE"})
 class LogoutView(APIView):
     authentication_class = [TokenAuthentication]
 
