@@ -63,7 +63,9 @@ class OfficerViewSet(viewsets.ModelViewSet):
             else:
                 return Response({"status": "Try again"})
 
-
+    @action(detail=True, methods=['get'])
+    def aman(self, request, pk=None):
+        return Response({"status": "AMAN HERE"})
 class LogoutView(APIView):
     authentication_class = [TokenAuthentication]
 
