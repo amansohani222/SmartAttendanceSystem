@@ -1,10 +1,11 @@
 import math
 from datetime import datetime
 
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 from django.http import Http404
 from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,7 +13,7 @@ from rest_framework.views import APIView
 
 from attendance.models import Officer, Absence
 from attendance.permissions import IsOwner
-from attendance.serializer import OfficerSerializer
+from attendance.serializer import OfficerSerializer, LoginSerializer
 
 
 class OfficerViewSet(viewsets.ModelViewSet):
@@ -80,6 +81,18 @@ class OfficerViewSet(viewsets.ModelViewSet):
             else:
                 return Response({"status": "Try again"})
 
+
+class LoginView(APIView):
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key, "id": request.user.id, "status": "success"}, status=200)
+        else:
+            return Response({"status": "failed"})
 
 class LogoutView(APIView):
     authentication_class = [TokenAuthentication]
