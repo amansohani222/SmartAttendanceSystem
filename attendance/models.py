@@ -12,6 +12,8 @@ class Officer(AbstractUser):
     phone = models.CharField(max_length=10, null=True)
 
 
-class Absence(models.Model):
-    absence_date = models.DateField(blank=True)
-    officer = models.ForeignKey(Officer,related_name='absent', on_delete=models.CASCADE)
+class Present(models.Model):
+    present_date = models.DateField(blank=True)
+    officer = models.ForeignKey(Officer, related_name='present', on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ('officer', 'present_date',)

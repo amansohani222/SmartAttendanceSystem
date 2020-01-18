@@ -11,14 +11,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from attendance.models import Officer, Absence
+from attendance.models import Officer, Present
 from attendance.permissions import IsOwner
 from attendance.serializer import OfficerSerializer, LoginSerializer
 
 
 class OfficerViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
-    #permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {
         'retrieve': (IsOwner,),
         'update': (IsOwner,),
@@ -55,9 +55,9 @@ class OfficerViewSet(viewsets.ModelViewSet):
         id = instance.id
         try:
             officer = Officer.objects.get(id=id)
-            absent_date = Absence.objects.filter(officer=officer).values('absence_date')
+            present_date = Present.objects.filter(officer=officer).values('present_date')
             serializer = OfficerSerializer(officer)
-            return Response({"officer": serializer.data, "absence_date": absent_date})
+            return Response({"officer": serializer.data, "present_date": present_date})
         except Exception:
             return Response({"message": "Please login first"})
 
@@ -65,22 +65,22 @@ class OfficerViewSet(viewsets.ModelViewSet):
     def update_attendance(self, request, pk=None):
         officer = Officer.objects.get(id=request.user.id)
         if datetime.now().time() > officer.office_time_entry:
-            absence = Absence(absence_date=datetime.now(), officer=officer)
-            absence.save()
-            return Response({"message": "Sorry you are late! Absent Marked"})
+            return Response({"message": "You are absent"})
         else:
             o_lat = float(officer.office_latitude)
             o_lon = float(officer.office_longitude)
             lat = float(request.GET['lat'])
             lon = float(request.GET['lon'])
             d = calc_distance([o_lat, o_lon], [lat, lon])
-            if d < 0.01:
-                officer.total_attendance += 1
-                officer.save()
-                return Response({"status": "Present Updated"})
+            if d < 1:
+                try:
+                    present = Present(present_date=datetime.now(), officer=officer)
+                    present.save()
+                    return Response({"message": "Present Marked"})
+                except Exception:
+                    return Response({"message": "Attendance is already marked"})
             else:
-                return Response({"status": "Try again"})
-
+                return Response({"message": "You are not at office"})
 
 class LoginView(APIView):
 
@@ -93,6 +93,7 @@ class LoginView(APIView):
             return Response({"token": token.key, "id": request.user.id, "status": "success"}, status=200)
         else:
             return Response({"status": "failed"})
+
 
 class LogoutView(APIView):
     authentication_class = [TokenAuthentication]

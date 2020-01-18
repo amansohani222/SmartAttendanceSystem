@@ -1,15 +1,16 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers, exceptions
-from attendance.models import Officer, Absence
+from attendance.models import Officer, Present
+
 
 class OfficerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Officer
         fields = '__all__'
 
-class AbsenceSerializer(serializers.ModelSerializer):
+class PresentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Absence
+        model = Present
         fields = '__all__'
 
 class LoginSerializer(serializers.Serializer):
